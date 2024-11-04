@@ -16,6 +16,15 @@ class CryptoHandler:
     def __init__(self, base_currency: str = "usd"):
         self.base_currency = base_currency
 
+        try:
+            self.supported_currencies = self.list_supported_currencies()
+        except (HTTPError, RequestException) as api_error:
+            logging.error(f"API or network issue: {api_error}")
+        except JSONDecodeError as json_error:
+            logging.error(
+                f"Failed to decode JSON data while fetching supported currencies: {json_error}"
+            )
+
     def _api_request(self, url: str):
         """
         Sends a Get request to the specified URL and returns the parsed JSON data.
