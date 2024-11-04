@@ -22,9 +22,7 @@ class CryptoHandler:
         except (HTTPError, RequestException) as api_error:
             logging.error(f"API or network issue: {api_error}")
         except JSONDecodeError as json_error:
-            logging.error(
-                f"Failed to decode JSON data while fetching supported currencies: {json_error}"
-            )
+            logging.error(f"Failed to decode JSON data while fetching supported currencies: {json_error}")
 
     def _api_request(self, url: str):
         """
@@ -52,9 +50,7 @@ class CryptoHandler:
             data = response.json()
             return data
         except HTTPError:
-            raise HTTPError(
-                f"HTTP request failed with status code {response.status_code} for URL: {url}"
-            )
+            raise HTTPError(f"HTTP request failed with status code {response.status_code} for URL: {url}")
         except JSONDecodeError:
             raise JSONDecodeError(f"Response from {url} could not be decoded as JSON.")
         except RequestException as e:
@@ -77,9 +73,7 @@ class CryptoHandler:
         for currency in self.supported_crypto_currencies:
             if currency["id"] == id:
                 return True
-        raise ValueError(
-            f"Provided cryptocurrency ID '{id}' does not exist in supported list."
-        )
+        raise ValueError(f"Provided cryptocurrency ID '{id}' does not exist in supported list.")
 
     def get_supported_currencies(self) -> list[str]:
         """
@@ -170,7 +164,45 @@ class CryptoHandler:
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
 
-    def get_specific_crypto(self, id: str):
+    def get_specific_crypto(self, id: str, base_currency: str = "usd") -> Dict[str, Any]:
+        """
+        Fetches the current price and market-related data for a specific cryptocurrency in a specified base currency.
+
+        This method makes an API request to CoinGecko to retrieve a simplified price and market cap information for
+        a specific cryptocurrency identified by its ID. The response includes the cryptocurrency's price and market cap
+        in the specified base currency.
+
+        Args:
+            id (str): The unique ID of the cryptocurrency to fetch.
+            base_currency (str): The fiat currency code to use for price conversion (default: "usd").
+                Must be one of the supported currencies returned by the API, such as "usd", "eur", "gbp", etc.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the current price and market data and more for the specified cryptocurrency
+            in the requested base currency.
+
+        Raises:
+            ValueError: If the provided base currency is not supported.
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
+        try:
+            self._is_valid_crypto_id(id)
+            if base_currency in self.supported_currencies:
+                url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+            else:
+                raise ValueError(f"Unsupported currency provided: {base_currency}")
+            coin_data = self._api_request(url=url)
+            return coin_data
+        except HTTPError:
+            raise HTTPError("HTTP error occurred")
+        except JSONDecodeError:
+            raise JSONDecodeError("JSON decode error occurred")
+        except RequestException as e:
+            raise RequestException(f"Request error occurred: {e}")
+
+    def get_specific_crypto_detailed(self, id: str):
         """
         Fetches detailed information for a specific cryptocurrency by its unique ID.
 
@@ -178,7 +210,7 @@ class CryptoHandler:
             id (str): The unique ID of the cryptocurrency to fetch.
 
         Returns:
-            dict: A dictionary containing detailed information about the cryptocurrency.
+            dict: A dictionary containing detailed information about the specified cryptocurrency.
 
         Raises:
             ValueError: If the provided cryptocurrency ID does not exist in the supported list.
