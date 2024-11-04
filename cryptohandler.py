@@ -17,8 +17,8 @@ class CryptoHandler:
         self.base_currency = base_currency
 
         try:
-            self.supported_currencies = self.list_supported_currencies()
-            self.supported_crypto_currencies = self.list_crypto_currencies()
+            self.supported_currencies = self.get_supported_currencies()
+            self.supported_crypto_currencies = self.get_crypto_currencies()
         except (HTTPError, RequestException) as api_error:
             logging.error(f"API or network issue: {api_error}")
         except JSONDecodeError as json_error:
@@ -81,7 +81,7 @@ class CryptoHandler:
             f"Provided cryptocurrency ID '{id}' does not exist in supported list."
         )
 
-    def list_supported_currencies(self) -> list[str]:
+    def get_supported_currencies(self) -> list[str]:
         """
         Fetches a list of supported fiat currencies from the CoinGecko API.
 
@@ -108,7 +108,7 @@ class CryptoHandler:
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
 
-    def list_crypto_currencies(self) -> list[dict]:
+    def get_crypto_currencies(self) -> list[dict]:
         """
         Fetches a list of all supported cryptocurrencies, providing basic information including coin ID, name, and symbol.
 
@@ -134,7 +134,7 @@ class CryptoHandler:
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
 
-    def list_crypto_currencies_detailed(self, base_currency="usd") -> list[Dict]:
+    def get_crypto_currencies_detailed(self, base_currency="usd") -> list[Dict]:
         """
         Fetches detailed market data for cryptocurrencies, including price, market cap, and trading volume.
 
@@ -170,7 +170,7 @@ class CryptoHandler:
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
 
-    def list_specific_crypto(self, id: str):
+    def get_specific_crypto(self, id: str):
         """
         Fetches detailed information for a specific cryptocurrency by its unique ID.
 
