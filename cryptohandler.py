@@ -80,25 +80,27 @@ class CryptoHandler:
             supported_currencies = self._api_request(url=url)
             return supported_currencies
         except HTTPError:
-            raise HTTPError(f"HTTP error occurred: {HTTPError}")
+            raise HTTPError("HTTP error occurred")
         except JSONDecodeError:
-            raise JSONDecodeError(f"JSON decode error occurred: {JSONDecodeError}")
+            raise JSONDecodeError("JSON decode error occurred")
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
 
     def list_crypto_currencies(self, base_currency="usd") -> list[dict]:
         """
-        Fetches and displays a list of cryptocurrency markets for the specified base currency.
+        Fetches a list of cryptocurrency markets for the specified base currency.
 
         This method constructs an API request to CoinGecko to retrieve the latest cryptocurrency market data,
-        converting values to the specified base currency. The retrieved data is then printed to the console.
+        converting values to the specified base currency. Before making the request, it checks if the provided
+        base currency is supported by the API. The retrieved data is returned as a list of dictionaries.
 
         Args:
             base_currency (str): The fiat currency code to use for market data conversion.
-            Defaults to "usd". Other valid values may include "eur", "gbp", etc.
+                Defaults to "usd". Other valid values may include "eur", "gbp", etc.
+                The base currency must be one of the supported currencies returned by the API.
 
         Returns:
-            list: A list of dictionaries containing market data for cryptocurrencies.
+            list[dict]: A list of dictionaries containing market data for cryptocurrencies.
 
         Raises:
             HTTPError: If the HTTP request returns an unsuccessful status code.
@@ -106,12 +108,15 @@ class CryptoHandler:
             RequestException: If a network-related error occurs or the request fails for another reason.
         """
         try:
-            url = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency={base_currency}"
+            if base_currency in self.supported_currencies:
+                url = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency={base_currency}"
+            else:
+                raise ValueError("Given currency is not supported")
             crypto_currencies = self._api_request(url=url)
             return crypto_currencies
         except HTTPError:
-            raise HTTPError(f"HTTP error occurred: {HTTPError}")
+            raise HTTPError("HTTP error occurred")
         except JSONDecodeError:
-            raise JSONDecodeError(f"JSON decode error occurred: {JSONDecodeError}")
+            raise JSONDecodeError("JSON decode error occurred")
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
