@@ -86,23 +86,50 @@ class CryptoHandler:
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
 
-    def list_crypto_currencies(self, base_currency="usd") -> list[dict]:
+    def list_crypto_currencies(self) -> list[dict]:
         """
-        Fetches a list of cryptocurrency markets for the specified base currency.
+        Fetches a list of all supported cryptocurrencies, providing basic information including coin ID, name, and symbol.
 
-        This method constructs an API request to CoinGecko to retrieve the latest cryptocurrency market data,
-        converting values to the specified base currency. Before making the request, it checks if the provided
-        base currency is supported by the API. The retrieved data is returned as a list of dictionaries.
-
-        Args:
-            base_currency (str): The fiat currency code to use for market data conversion.
-                Defaults to "usd". Other valid values may include "eur", "gbp", etc.
-                The base currency must be one of the supported currencies returned by the API.
+        This method sends an API request to CoinGecko to retrieve an updated list of all supported coins on the platform.
+        The data returned includes the coin's unique identifier (ID), name, and symbol.
 
         Returns:
-            list[dict]: A list of dictionaries containing market data for cryptocurrencies.
+            list[dict]: A list of dictionaries, each containing 'id', 'name', and 'symbol' for supported cryptocurrencies.
 
         Raises:
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
+        try:
+            url = "https://api.coingecko.com/api/v3/coins/list"
+            crypto_currencies = self._api_request(url=url)
+            return crypto_currencies
+        except HTTPError:
+            raise HTTPError("HTTP error occurred")
+        except JSONDecodeError:
+            raise JSONDecodeError("JSON decode error occurred")
+        except RequestException as e:
+            raise RequestException(f"Request error occurred: {e}")
+
+    def list_crypto_currencies_detailed(self, base_currency="usd") -> list[Dict]:
+        """
+        Fetches detailed market data for cryptocurrencies, including price, market cap, and trading volume.
+
+        This method sends an API request to CoinGecko to retrieve the latest cryptocurrency market data,
+        such as current price, market capitalization, and 24-hour trading volume, for the specified base currency.
+        Before making the request, it verifies that the base currency is supported.
+
+        Args:
+            base_currency (str): The fiat currency code to use for market data conversion (default: "usd").
+                Must be one of the supported currencies returned by the API, such as "usd", "eur", "gbp", etc.
+
+        Returns:
+            list[Dict]: A list of dictionaries containing detailed market data for cryptocurrencies, including
+            'current_price', 'market_cap', 'total_volume', and other market-related metrics.
+
+        Raises:
+            ValueError: If the provided base currency is not supported.
             HTTPError: If the HTTP request returns an unsuccessful status code.
             JSONDecodeError: If the response cannot be decoded as JSON.
             RequestException: If a network-related error occurs or the request fails for another reason.
@@ -111,7 +138,7 @@ class CryptoHandler:
             if base_currency in self.supported_currencies:
                 url = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency={base_currency}"
             else:
-                raise ValueError("Given currency is not supported")
+                raise ValueError(f"Unsupported currency provided: {base_currency}")
             crypto_currencies = self._api_request(url=url)
             return crypto_currencies
         except HTTPError:
