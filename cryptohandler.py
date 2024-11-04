@@ -17,6 +17,22 @@ class CryptoHandler:
         pass
 
     def _api_request(self, url: str):
+        """
+        Sends a Get request to the specified URL and returns the parsed JSON data.
+
+        This method is a protected utility for making API requests. It handles HTTP errors and JSON decoding issues, providing clear error messages if something goes wrong.
+
+        Args:
+            url(str): The API endpoint URL to send the GET request to.
+
+        Returns:
+            dict: The JSON response data parsed into a dictionary.
+
+        Raises:
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
         headers = {"accept": "application/json"}
 
         try:
