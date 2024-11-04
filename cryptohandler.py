@@ -252,3 +252,71 @@ class CryptoHandler:
             raise JSONDecodeError("JSON decode error occurred")
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
+
+    def get_total_marketcap(self, base_currency: str = "usd") -> int:
+        """
+        Retrieves the total market capitalization of all cryptocurrencies in the specified base currency.
+
+        This method fetches the global market data and extracts the total market cap value,
+        rounding it to the nearest whole number for readability. The result is returned as a float.
+
+        Args:
+            base_currency (str): The fiat currency code to use for market capitalization conversion.
+                Defaults to "usd". Must be one of the supported currencies returned by the API,
+                such as "eur", "gbp", etc.
+
+        Returns:
+            int: The total market capitalization of all cryptocurrencies in the specified base currency.
+
+        Raises:
+            ValueError: If the provided base currency is not supported.
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
+        try:
+            global_data = self.get_global_data()
+            if base_currency in self.supported_currencies:
+                return round(global_data["data"]["total_market_cap"][base_currency])
+            else:
+                raise ValueError(f"Unsupported currency provided: {base_currency}")
+        except HTTPError:
+            raise HTTPError("HTTP error occurred")
+        except JSONDecodeError:
+            raise JSONDecodeError("JSON decode error occurred")
+        except RequestException as e:
+            raise RequestException(f"Request error occurred: {e}")
+
+    def get_total_volume(self, base_currency: str = "usd") -> int:
+        """
+        Retrieves the total 24-hour trading volume of all cryptocurrencies in the specified base currency.
+
+        This method fetches the global market data and extracts the total trading volume value
+        for the last 24 hours, rounding it to the nearest whole number for readability. The result is returned as an integer.
+
+        Args:
+            base_currency (str): The fiat currency code to use for volume conversion.
+                Defaults to "usd". Must be one of the supported currencies returned by the API,
+                such as "eur", "gbp", etc.
+
+        Returns:
+            int: The total 24-hour trading volume of all cryptocurrencies in the specified base currency.
+
+        Raises:
+            ValueError: If the provided base currency is not supported.
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
+        try:
+            global_data = self.get_global_data()
+            if base_currency in self.supported_currencies:
+                return round(global_data["data"]["total_volume"][base_currency])
+            else:
+                raise ValueError(f"Unsupported currency provided: {base_currency}")
+        except HTTPError:
+            raise HTTPError("HTTP error occurred")
+        except JSONDecodeError:
+            raise JSONDecodeError("JSON decode error occurred")
+        except RequestException as e:
+            raise RequestException(f"Request error occurred: {e}")
