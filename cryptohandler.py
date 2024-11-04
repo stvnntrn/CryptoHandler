@@ -18,6 +18,7 @@ class CryptoHandler:
 
         try:
             self.supported_currencies = self.list_supported_currencies()
+            self.supported_crypto_currencies = self.list_crypto_currencies()
         except (HTTPError, RequestException) as api_error:
             logging.error(f"API or network issue: {api_error}")
         except JSONDecodeError as json_error:
@@ -58,6 +59,27 @@ class CryptoHandler:
             raise JSONDecodeError(f"Response from {url} could not be decoded as JSON.")
         except RequestException as e:
             raise RequestException(f"Request failed: {e} for URL: {url}")
+
+    def _is_valid_crypto_id(self, id: str) -> bool:
+        """
+        Checks if the provided cryptocurrency ID is valid by comparing it against
+        the list of supported cryptocurrencies.
+
+        Args:
+            id (str): The unique identifier for the cryptocurrency to validate.
+
+        Returns:
+            bool: True if the cryptocurrency ID exists in the supported list; otherwise, raises ValueError.
+
+        Raises:
+            ValueError: If the provided cryptocurrency ID does not exist in the supported list.
+        """
+        for currency in self.supported_crypto_currencies:
+            if currency["id"] == id:
+                return True
+        raise ValueError(
+            f"Provided cryptocurrency ID '{id}' does not exist in supported list."
+        )
 
     def list_supported_currencies(self) -> list[str]:
         """
@@ -141,6 +163,34 @@ class CryptoHandler:
                 raise ValueError(f"Unsupported currency provided: {base_currency}")
             crypto_currencies = self._api_request(url=url)
             return crypto_currencies
+        except HTTPError:
+            raise HTTPError("HTTP error occurred")
+        except JSONDecodeError:
+            raise JSONDecodeError("JSON decode error occurred")
+        except RequestException as e:
+            raise RequestException(f"Request error occurred: {e}")
+
+    def list_specific_crypto(self, id: str):
+        """
+        Fetches detailed information for a specific cryptocurrency by its unique ID.
+
+        Args:
+            id (str): The unique ID of the cryptocurrency to fetch.
+
+        Returns:
+            dict: A dictionary containing detailed information about the cryptocurrency.
+
+        Raises:
+            ValueError: If the provided cryptocurrency ID does not exist in the supported list.
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
+        try:
+            self._is_valid_crypto_id(id)
+            url = f"https://api.coingecko.com/api/v3/coins/{id}"
+            coin_data = self._api_request(url=url)
+            return coin_data
         except HTTPError:
             raise HTTPError("HTTP error occurred")
         except JSONDecodeError:
