@@ -197,3 +197,26 @@ class CryptoHandler:
             raise JSONDecodeError("JSON decode error occurred")
         except RequestException as e:
             raise RequestException(f"Request error occurred: {e}")
+
+    def get_global_data(self) -> dict:
+        """
+        Fetches global cryptocurrency market data, including total market cap, total volume, and more.
+
+        Returns:
+            dict: A dictionary containing various global market metrics.
+
+        Raises:
+            HTTPError: If the HTTP request returns an unsuccessful status code.
+            JSONDecodeError: If the response cannot be decoded as JSON.
+            RequestException: If a network-related error occurs or the request fails for another reason.
+        """
+        try:
+            url = "https://api.coingecko.com/api/v3/global"
+            global_data = self._api_request(url=url)
+            return global_data
+        except HTTPError:
+            raise HTTPError("HTTP error occurred")
+        except JSONDecodeError:
+            raise JSONDecodeError("JSON decode error occurred")
+        except RequestException as e:
+            raise RequestException(f"Request error occurred: {e}")
